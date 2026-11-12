@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f7f4ef">
+<link rel="manifest" href="manifest.webmanifest">
+<title>こそだてノート</title>
+<style>
+:root{--bg:#f7f4ef;--card:#fff;--ink:#292821;--muted:#777468;--line:#e8e2d8;--green:#537b68;--green2:#e7efe9;--peach:#f6e9df}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN",Meiryo,sans-serif}
+header{padding:22px 18px 12px;max-width:760px;margin:auto}h1{font-size:24px;margin:0}header p{margin:5px 0;color:var(--muted);font-size:13px}
+main{max-width:760px;margin:auto;padding:8px 14px 100px}.tabs{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--line);display:flex;justify-content:center;z-index:5;padding:8px max(8px,env(safe-area-inset-right)) calc(8px + env(safe-area-inset-bottom));}
+.tabs button{flex:1;max-width:150px;border:0;background:none;color:var(--muted);padding:8px 3px;font-size:12px}.tabs button.active{color:var(--green);font-weight:700}
+.panel{display:none}.panel.active{display:block}.card{background:var(--card);border:1px solid var(--line);border-radius:17px;padding:15px;margin:10px 0;box-shadow:0 2px 8px #342a1608}
+h2{font-size:17px;margin:0 0 12px}.muted{color:var(--muted);font-size:13px}.row{display:flex;gap:9px;align-items:center}.row>*{flex:1}
+label{display:block;font-size:13px;color:var(--muted);margin:10px 0 5px}input,select,textarea{width:100%;border:1px solid var(--line);border-radius:11px;padding:12px;background:#fff;color:var(--ink);font:inherit;font-size:15px}textarea{min-height:95px;resize:vertical}
+button.primary{background:var(--green);color:#fff;border:0;border-radius:12px;padding:12px 16px;font-weight:700;font-size:14px;width:100%;margin-top:12px}
+button.secondary,.smallbtn{background:var(--green2);color:var(--green);border:0;border-radius:10px;padding:9px 12px;font-weight:600}
+.smallbtn{font-size:12px}.entry{border-top:1px solid var(--line);padding:12px 0}.entry:first-child{border-top:0}.entry h3{font-size:15px;margin:4px 0}.tag{display:inline-block;background:var(--peach);padding:3px 8px;border-radius:20px;font-size:11px;color:#805b45;margin-right:5px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.stat{background:var(--green2);border-radius:13px;padding:12px;text-align:center}.stat b{display:block;font-size:22px;color:var(--green)}.stat span{font-size:11px;color:var(--muted)}
+.notice{background:#fff8e9;border:1px solid #f0dfb8;border-radius:12px;padding:11px;font-size:12px;color:#725c32;line-height:1.6}
+.actions{display:flex;gap:8px;flex-wrap:wrap}.actions button{flex:1}
+.empty{text-align:center;padding:25px 10px;color:var(--muted);font-size:13px}
+@media(min-width:600px){main{padding-left:22px;padding-right:22px}.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}}
+</style>
+</head>
+<body>
+<header><h1>🌱 こそだてノート</h1><p>家族の毎日と、子どもの成長を残そう。</p></header>
+<main>
+<section id="home" class="panel active">
+ <div class="card"><h2>わが家の記録</h2><div class="stats"><div class="stat"><b id="childCount">0</b><span>子ども</span></div><div class="stat"><b id="recordCount">0</b><span>記録</span></div><div class="stat"><b id="monthCount">0</b><span>今月の記録</span></div></div></div>
+ <div class="card"><h2>最近の記録</h2><div id="recent"></div></div>
+ <div class="notice">この試作版は、記録をこのブラウザ内に保存します。ブラウザのデータ削除・端末故障に備えて、定期的に「設定」からバックアップしてください。</div>
+</section>
+<section id="add" class="panel">
+ <div class="card"><h2>記録を追加</h2>
+  <label>子ども</label><select id="recordChild"></select>
+  <div class="formgrid"><div><label>日付</label><input id="recordDate" type="date"></div><div><label>カテゴリー</label><select id="category"><option>日常</option><option>成長</option><option>食事</option><option>睡眠</option><option>健康</option><option>会話</option><option>遊び</option><option>学校・園</option><option>その他</option></select></div></div>
+  <label>タイトル</label><input id="recordTitle" placeholder="例：初めて自転車に乗れた">
+  <label>内容</label><textarea id="recordBody" placeholder="できごと、子どもの様子、気づいたことなど"></textarea>
+  <label>記録した人</label><select id="author"><option>夫</option><option>妻</option><option>その他</option></select>
+  <button class="primary" onclick="addRecord()">記録を保存</button>
+ </div>
+</section>
+<section id="search" class="panel">
+ <div class="card"><h2>記録を探す・質問する</h2><p class="muted">保存した記録のタイトル・内容・カテゴリーを検索します。</p>
+  <label>質問・キーワード</label><input id="query" placeholder="例：自転車、好きな食べ物、去年の誕生日">
+  <div class="row"><div><label>子ども</label><select id="searchChild"><option value="">全員</option></select></div><div><label>カテゴリー</label><select id="searchCategory"><option value="">すべて</option><option>日常</option><option>成長</option><option>食事</option><option>睡眠</option><option>健康</option><option>会話</option><option>遊び</option><option>学校・園</option><option>その他</option></select></div></div>
+  <button class="primary" onclick="searchRecords()">検索する</button><div id="answer" aria-live="polite"></div>
+ </div>
+</section>
+<section id="growth" class="panel">
+ <div class="card"><h2>子どもの登録</h2><label>名前・呼び名</label><input id="childName" placeholder="例：はる">
+ <div class="row"><div><label>生年月日</label><input id="childBirth" type="date"></div><div><label>表示色</label><select id="childColor"><option>グリーン</option><option>オレンジ</option><option>ブルー</option><option>ピンク</option></select></div></div>
+ <button class="primary" onclick="addChild()">子どもを登録</button><div id="childrenList"></div></div>
+</section>
+<section id="settings" class="panel">
+ <div class="card"><h2>Excel出力</h2><p class="muted">記録一覧・子ども一覧をCSV形式で保存します。CSVはExcelで開いて、並べ替え・集計・印刷ができます。</p>
+ <button class="primary" onclick="exportRecordsCsv()">記録一覧をExcel用CSVで出力</button>
+ <button class="primary" onclick="exportChildrenCsv()">子ども一覧をExcel用CSVで出力</button>
+ <p class="muted">iPhoneでは出力後に共有メニューが表示されたら「ファイルに保存」を選んでください。Excelアプリがあれば、そのまま開くこともできます。</p></div>
+ <div class="card"><h2>バックアップ・共有</h2><p class="muted">JSONファイルに全データを書き出し、もう一方のスマホで読み込むことで記録を統合できます。</p>
+ <button class="primary" onclick="exportData()">全データをバックアップ（JSON）</button>
+ <label>バックアップを読み込む</label><input type="file" id="importFile" accept="application/json">
+ <button class="primary" onclick="importData()">読み込んで統合する</button>
+ <p class="muted">読み込みは既存データを消去せず、記録を追加します。夫婦間で共有する場合は、双方がそれぞれ出力・読み込みを行ってください。</p></div>
+ <div class="card"><h2>このアプリについて</h2><p class="muted">ローカル保存型の試作版です。外部AIには接続していません。質問機能は登録済み記録の検索・簡易集計で回答します。</p><div class="notice">大切な記録は必ず別の場所にもバックアップしてください。健康・医療に関する記録は、AIによる診断ではなく家族のメモとして利用してください。</div></div>
+</section>
+</main>
+<nav class="tabs">
+ <button class="active" data-tab="home">⌂<br>ホーム</button><button data-tab="add">＋<br>記録</button><button data-tab="search">⌕<br>質問</button><button data-tab="growth">♡<br>子ども</button><button data-tab="settings">⚙<br>設定</button>
+</nav>
+<script>
+const KEY='kosodate_note_v1';
+let db=load();
+function load(){try{return JSON.parse(localStorage.getItem(KEY))||{children:[],records:[]}}catch(e){return {children:[],records:[]}}}
+function save(){localStorage.setItem(KEY,JSON.stringify(db));render()}
+function id(){return Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,8)}
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function childName(cid){return db.children.find(c=>c.id===cid)?.name||'登録なし'}
+function addChild(){let name=document.getElementById('childName').value.trim();if(!name){alert('名前を入力してください');return}db.children.push({id:id(),name,birth:document.getElementById('childBirth').value,color:document.getElementById('childColor').value});document.getElementById('childName').value='';document.getElementById('childBirth').value='';save()}
+function addRecord(){if(!db.children.length){alert('先に「子ども」画面で子どもを登録してください');return}
+ let title=document.getElementById('recordTitle').value.trim();if(!title){alert('タイトルを入力してください');return}
+ db.records.push({id:id(),childId:document.getElementById('recordChild').value,date:document.getElementById('recordDate').value||new Date().toISOString().slice(0,10),category:document.getElementById('category').value,title,body:document.getElementById('recordBody').value.trim(),author:document.getElementById('author').value,createdAt:new Date().toISOString()});
+ document.getElementById('recordTitle').value='';document.getElementById('recordBody').value='';save();showTab('home');}
+function recordHtml(r){return `<div class="entry"><div class="muted">${esc(r.date)} ・ ${esc(childName(r.childId))} ・ ${esc(r.author)}</div><h3>${esc(r.title)}</h3><span class="tag">${esc(r.category)}</span><div style="font-size:14px;margin-top:7px;white-space:pre-wrap">${esc(r.body)}</div></div>`}
+function render(){document.getElementById('childCount').textContent=db.children.length;document.getElementById('recordCount').textContent=db.records.length;let m=new Date().toISOString().slice(0,7);document.getElementById('monthCount').textContent=db.records.filter(r=>r.date?.startsWith(m)).length;
+ let recent=[...db.records].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,5);document.getElementById('recent').innerHTML=recent.length?recent.map(recordHtml).join(''):'<div class="empty">まだ記録がありません。「記録」から追加しましょう。</div>';
+ let opts=db.children.map(c=>`<option value="${esc(c.id)}">${esc(c.name)}</option>`).join('');let rc=document.getElementById('recordChild');let old=rc.value;rc.innerHTML=opts||'<option value="">子どもを先に登録してください</option>';if([...rc.options].some(o=>o.value===old))rc.value=old;
+ let sc=document.getElementById('searchChild');old=sc.value;sc.innerHTML='<option value="">全員</option>'+opts;if([...sc.options].some(o=>o.value===old))sc.value=old;
+ document.getElementById('childrenList').innerHTML=db.children.length?'<h2 style="margin-top:18px">登録済みの子ども</h2>'+db.children.map(c=>`<div class="entry"><b>${esc(c.name)}</b><div class="muted">${c.birth?'生年月日：'+esc(c.birth):'生年月日未登録'}</div></div>`).join(''):'<div class="empty">子どもはまだ登録されていません。</div>';
+}
+function searchRecords(){let q=document.getElementById('query').value.trim().toLowerCase(),cid=document.getElementById('searchChild').value,cat=document.getElementById('searchCategory').value;
+ let arr=db.records.filter(r=>(!cid||r.childId===cid)&&(!cat||r.category===cat)&&(!q||[r.title,r.body,r.category,childName(r.childId),r.author].join(' ').toLowerCase().includes(q))).sort((a,b)=>b.date.localeCompare(a.date));
+ let answer=document.getElementById('answer');if(!arr.length){answer.innerHTML='<div class="empty">該当する記録は見つかりませんでした。</div>';return}
+ let summary=`<div class="card" style="background:var(--green2);margin-top:14px"><b>${arr.length}件の記録が見つかりました</b><div class="muted">対象期間：${arr[arr.length-1].date} ～ ${arr[0].date}</div></div>`;
+ if(/何件|何回|回数|件数|合計|まとめ|一覧|記録/.test(q)){let counts={};arr.forEach(r=>counts[r.category]=(counts[r.category]||0)+1);summary+=`<div class="card"><b>カテゴリー別件数</b><p>${Object.entries(counts).map(([k,v])=>`${esc(k)}：${v}件`).join(' ／ ')}</p></div>`}
+ answer.innerHTML=summary+`<div class="card">${arr.map(recordHtml).join('')}</div>`;
+}
+
+function csvCell(value){let s=String(value??'');return '"'+s.replace(/"/g,'""')+'"'}
+function downloadCsv(filename, headers, rows){
+ let csv='\uFEFF'+[headers,...rows].map(row=>row.map(csvCell).join(',')).join('\r\n');
+ let blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+ let url=URL.createObjectURL(blob),a=document.createElement('a');
+ a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();
+ setTimeout(()=>URL.revokeObjectURL(url),1500);
+}
+function exportRecordsCsv(){
+ let rows=[...db.records].sort((a,b)=>(a.date||'').localeCompare(b.date||'')).map(r=>[
+  r.date,childName(r.childId),r.category,r.title,r.body,r.author,r.createdAt
+ ]);
+ downloadCsv('kosodate-records-'+new Date().toISOString().slice(0,10)+'.csv',
+  ['日付','子ども','カテゴリー','タイトル','内容','記録者','登録日時'],rows);
+}
+function exportChildrenCsv(){
+ let rows=db.children.map(c=>[c.name,c.birth,c.color]);
+ downloadCsv('kosodate-children-'+new Date().toISOString().slice(0,10)+'.csv',
+  ['名前','生年月日','表示色'],rows);
+}
+
+function exportData(){let blob=new Blob([JSON.stringify({...db,exportedAt:new Date().toISOString(),format:'kosodate-note-v1'},null,2)],{type:'application/json'});let a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='kosodate-backup-'+new Date().toISOString().slice(0,10)+'.json';a.click();URL.revokeObjectURL(a.href)}
+function importData(){let f=document.getElementById('importFile').files[0];if(!f){alert('バックアップファイルを選択してください');return}let reader=new FileReader();reader.onload=()=>{try{let incoming=JSON.parse(reader.result);if(!Array.isArray(incoming.children)||!Array.isArray(incoming.records))throw Error('形式が違います');let childMap={};incoming.children.forEach(c=>{let same=db.children.find(x=>x.name===c.name&&x.birth===c.birth);if(same)childMap[c.id]=same.id;else{let copy={...c,id:id()};db.children.push(copy);childMap[c.id]=copy.id}});
+ let known=new Set(db.records.map(r=>r.id));incoming.records.forEach(r=>{if(!known.has(r.id)){db.records.push({...r,id:id(),childId:childMap[r.childId]||r.childId});}});save();alert('バックアップを統合しました')}catch(e){alert('読み込めませんでした：'+e.message)}};reader.readAsText(f)}
+function showTab(tab){document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('active',p.id===tab));document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));window.scrollTo(0,0)}
+document.querySelectorAll('.tabs button').forEach(b=>b.addEventListener('click',()=>showTab(b.dataset.tab)));
+document.getElementById('recordDate').value=new Date().toISOString().slice(0,10);
+render();
+if('serviceWorker' in navigator && location.protocol.startsWith('http'))navigator.serviceWorker.register('./sw.js').catch(()=>{});
+</script>
+</body></html>
